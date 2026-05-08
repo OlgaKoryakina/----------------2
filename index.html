@@ -114,14 +114,9 @@
     }
 
     li {
-      opacity: 0;
-      transform: translateY(10px);
-      animation: item-in 500ms ease forwards;
+      opacity: 1;
+      transform: translateY(0);
     }
-
-    li:nth-child(1) { animation-delay: 120ms; }
-    li:nth-child(2) { animation-delay: 220ms; }
-    li:nth-child(3) { animation-delay: 320ms; }
 
     .actions {
       display: flex;
@@ -162,6 +157,10 @@
       animation: item-swap 450ms ease forwards;
     }
 
+    .is-refreshing li:nth-child(1) { animation-delay: 80ms; }
+    .is-refreshing li:nth-child(2) { animation-delay: 160ms; }
+    .is-refreshing li:nth-child(3) { animation-delay: 240ms; }
+
     @keyframes card-enter {
       from {
         opacity: 0;
@@ -170,13 +169,6 @@
       to {
         opacity: 1;
         transform: translateY(0) scale(1);
-      }
-    }
-
-    @keyframes item-in {
-      to {
-        opacity: 1;
-        transform: translateY(0);
       }
     }
 
