@@ -159,7 +159,7 @@
     }
 
     .is-refreshing li {
-      animation: item-swap 450ms ease;
+      animation: item-swap 450ms ease forwards;
     }
 
     @keyframes card-enter {
@@ -280,6 +280,7 @@
     const hint = document.getElementById("selectionHint");
     let selectedGoal = "all";
     let selectedFormat = "all";
+    let lastRenderedSignature = "";
 
     const goalLabels = {
       all: "все цели",
@@ -323,7 +324,6 @@
     }
 
     function renderNextSet() {
-      const current = Array.from(list.children).map((li) => li.textContent);
       const filteredSets = getFilteredSets();
       updateHint(filteredSets.length);
 
@@ -339,24 +339,26 @@
         return;
       }
 
-      let next = filteredSets[Math.floor(Math.random() * filteredSets.length)];
-
-      if (filteredSets.length > 1) {
-        while (next.lines.join("|") === current.join("|")) {
-          next = filteredSets[Math.floor(Math.random() * filteredSets.length)];
-        }
-      }
+      const candidates = filteredSets.filter(
+        (item) => item.lines.join("|") !== lastRenderedSignature
+      );
+      const pool = candidates.length > 0 ? candidates : filteredSets;
+      const next = pool[Math.floor(Math.random() * pool.length)];
+      lastRenderedSignature = next.lines.join("|");
 
       list.classList.remove("is-refreshing");
       void list.offsetWidth;
       list.classList.add("is-refreshing");
 
-      Array.from(list.children).forEach((li, idx) => {
-        li.textContent = next.lines[idx];
-      });
+      list.innerHTML = next.lines
+        .map((line) => `<li>${line}</li>`)
+        .join("");
     }
 
-    button.addEventListener("click", renderNextSet);
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      renderNextSet();
+    });
 
     goalChips.addEventListener("click", (event) => {
       const chip = event.target.closest(".chip");
@@ -379,6 +381,7 @@
     });
 
     updateHint(ideasByCategory.length);
+    renderNextSet();
   </script>
 </body>
 </html>
