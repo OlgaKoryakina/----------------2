@@ -55,6 +55,57 @@
       font-size: 1rem;
     }
 
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(15, 23, 42, 0.45);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: all 180ms ease;
+    }
+
+    .chip:hover {
+      transform: translateY(-1px);
+      border-color: rgba(56, 189, 248, 0.7);
+      box-shadow: 0 6px 12px rgba(56, 189, 248, 0.18);
+    }
+
+    .chip.active {
+      background: linear-gradient(90deg, rgba(56, 189, 248, 0.28), rgba(167, 139, 250, 0.28));
+      border-color: rgba(56, 189, 248, 0.95);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.18);
+    }
+
+    .chip.pulse-once {
+      animation: chip-pulse 380ms ease;
+    }
+
     ul {
       margin: 0 0 22px;
       padding-left: 22px;
@@ -77,7 +128,14 @@
       justify-content: flex-start;
     }
 
-    button {
+    .hint {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      min-height: 1.2em;
+    }
+
+    .generate-btn {
       border: 0;
       color: white;
       font-size: 1rem;
@@ -90,13 +148,13 @@
       transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
     }
 
-    button:hover {
+    .generate-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 14px 26px rgba(167, 139, 250, 0.35);
       filter: brightness(1.06);
     }
 
-    button:active {
+    .generate-btn:active {
       transform: translateY(0);
     }
 
@@ -132,55 +190,161 @@
         transform: translateY(0);
       }
     }
+
+    @keyframes chip-pulse {
+      0% {
+        transform: scale(1);
+      }
+      45% {
+        transform: scale(1.07);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .filters {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
   <main class="container">
     <h1>Генератор идей для постов</h1>
     <p class="subtitle">Нажми кнопку, чтобы получить новую подборку контента.</p>
+    <div class="filters">
+      <div class="field">
+        <label>Цель</label>
+        <div class="chips" id="goalChips">
+          <button class="chip active" type="button" data-group="goal" data-value="all">Все цели</button>
+          <button class="chip" type="button" data-group="goal" data-value="sales">Продажи</button>
+          <button class="chip" type="button" data-group="goal" data-value="engagement">Вовлечение</button>
+          <button class="chip" type="button" data-group="goal" data-value="brand">Личный бренд</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Формат</label>
+        <div class="chips" id="formatChips">
+          <button class="chip active" type="button" data-group="format" data-value="all">Все форматы</button>
+          <button class="chip" type="button" data-group="format" data-value="reels">Reels</button>
+          <button class="chip" type="button" data-group="format" data-value="carousel">Карусель</button>
+          <button class="chip" type="button" data-group="format" data-value="text">Текстовый пост</button>
+        </div>
+      </div>
+    </div>
     <ul id="ideasList">
-      <li>5 идей для постов для экспертов</li>
-      <li>3 идеи сторис на сегодня</li>
-      <li>Контент план на неделю</li>
+      <li>5 идей постов: чем ремень ручной работы лучше масс-маркета</li>
+      <li>3 сторис на сегодня: процесс тиснения, выбор кожи, готовый ремень</li>
+      <li>Контент-план на неделю: материалы, дизайн, отзывы, уход, закулисье</li>
     </ul>
     <div class="actions">
-      <button id="generateBtn" type="button">Сгенерировать</button>
+      <button id="generateBtn" class="generate-btn" type="button">Сгенерировать</button>
     </div>
+    <p class="hint" id="selectionHint">Показываются все идеи без ограничений.</p>
   </main>
 
   <script>
     const ideasByCategory = [
-      [
-        "5 идей для постов для экспертов",
-        "3 идеи сторис на сегодня",
-        "Контент план на неделю"
-      ],
-      [
-        "7 тем для экспертных постов в блоге",
-        "4 быстрые идеи сторис для вовлечения",
-        "План публикаций на 7 дней"
-      ],
-      [
-        "5 постов с личными кейсами и выводами",
-        "3 сторис с опросами для аудитории",
-        "Контент-план на неделю по рубрикам"
-      ],
-      [
-        "6 экспертных постов: советы и инструменты",
-        "3 идеи сторис: бэкстейдж, вопрос, отзыв",
-        "План контента на неделю с CTA"
-      ]
+      { goal: "sales", format: "text", lines: ["5 идей постов: чем ремень ручной работы лучше масс-маркета", "3 сторис на сегодня: процесс тиснения, выбор кожи, готовый ремень", "Контент-план на неделю: материалы, дизайн, отзывы, уход, закулисье"] },
+      { goal: "engagement", format: "reels", lines: ["5 идей постов: как выбрать ремень под джинсы, костюм и casual", "3 сторис на сегодня: утро в мастерской, нарезка кожи, финальный шов", "Контент-план на неделю: стили, размеры, фурнитура, упаковка, FAQ"] },
+      { goal: "brand", format: "carousel", lines: ["5 идей постов: виды кожи для ремней и как они стареют", "3 сторис на сегодня: образцы кожи крупным планом, тест на гибкость, советы по уходу", "Контент-план на неделю: кожа, уход, ошибки, мифы, разбор заказа"] },
+      { goal: "sales", format: "reels", lines: ["5 идей постов: авторские пряжки и как они меняют образ", "3 сторис на сегодня: коллекция пряжек, голосование за фаворита, результат", "Контент-план на неделю: пряжки, сочетания, персонализация, кейсы, отзывы"] },
+      { goal: "engagement", format: "carousel", lines: ["5 идей постов: история одного ремня от эскиза до отправки", "3 сторис на сегодня: эскиз, тиснение и финишная обработка", "Контент-план на неделю: этапы работы, инструменты, сроки, упаковка, доставка"] },
+      { goal: "brand", format: "text", lines: ["5 идей постов: тиснение инициалов и монограмм для подарка", "3 сторис на сегодня: шрифты для тиснения, пробный оттиск, готовый результат", "Контент-план на неделю: персонализация, подарки, поводы, примеры, отзывы"] },
+      { goal: "sales", format: "carousel", lines: ["5 идей постов: как правильно снять мерки для ремня", "3 сторис на сегодня: инструкция по замеру, частые ошибки, чек-лист", "Контент-план на неделю: замеры, посадка, регулировка, полезные советы, Q&A"] },
+      { goal: "engagement", format: "text", lines: ["5 идей постов: топ-ошибок при выборе ремня и как их избежать", "3 сторис на сегодня: ошибка №1, ошибка №2, правильный вариант", "Контент-план на неделю: ошибки, лайфхаки, примеры до/после, рекомендации, CTA"] },
+      { goal: "brand", format: "reels", lines: ["5 идей постов: уход за кожаным ремнем по сезонам", "3 сторис на сегодня: средства ухода, как наносить, итог после обработки", "Контент-план на неделю: весна/лето/осень/зима, хранение, восстановление"] },
+      { goal: "sales", format: "text", lines: ["5 идей постов: как сочетаются ремни с обувью и аксессуарами", "3 сторис на сегодня: три образа с разными пряжками", "Контент-план на неделю: образы, палитры, стиль, подбор комплекта, советы"] },
+      { goal: "engagement", format: "reels", lines: ["5 идей постов: закулисье мастерской и рабочий день мастера", "3 сторис на сегодня: инструменты на столе, момент тиснения, упаковка заказа", "Контент-план на неделю: процессы, тайминг, рабочие привычки, атмосфера, бэкстейдж"] },
+      { goal: "brand", format: "carousel", lines: ["5 идей постов: сравнение ремней машинной и ручной работы", "3 сторис на сегодня: шов вблизи, толщина кожи, проверка прочности", "Контент-план на неделю: сравнения, аргументы, преимущества, примеры, выводы"] },
+      { goal: "sales", format: "reels", lines: ["5 идей постов: мужские ремни с авторской пряжкой - подборка моделей", "3 сторис на сегодня: новинка дня, детали пряжки, пример в образе", "Контент-план на неделю: мужская линейка, сочетания, материалы, отзывы, оффер"] },
+      { goal: "engagement", format: "carousel", lines: ["5 идей постов: женские ремни ручной работы - акценты в стиле", "3 сторис на сегодня: тонкий ремень, широкий ремень, образ с платьем", "Контент-план на неделю: женская линейка, стилизация, цвета, кейсы, рекомендации"] },
+      { goal: "brand", format: "text", lines: ["5 идей постов: как выбрать ремень в подарок мужчине или женщине", "3 сторис на сегодня: упаковка подарка, варианты тиснения, реакция клиента", "Контент-план на неделю: подарочные идеи, бюджеты, персонализация, дедлайны, отзывы"] },
+      { goal: "sales", format: "carousel", lines: ["5 идей постов: кейсы клиентов - было/стало после подбора ремня", "3 сторис на сегодня: запрос клиента, выбранная модель, итоговый образ", "Контент-план на неделю: клиентские истории, результаты, отзывы, инсайты, CTA"] },
+      { goal: "engagement", format: "text", lines: ["5 идей постов: популярные вопросы о ремнях с тиснением", "3 сторис на сегодня: вопрос-ответ, мини-разбор, опрос аудитории", "Контент-план на неделю: FAQ, мифы, советы, нюансы заказа, напоминание о записи"] },
+      { goal: "brand", format: "reels", lines: ["5 идей постов: почему натуральная кожа служит годами", "3 сторис на сегодня: структура кожи, износостойкость, пример старения", "Контент-план на неделю: материалы, долговечность, уход, примеры, заключение"] },
+      { goal: "sales", format: "text", lines: ["5 идей постов: подбор ремня по типу фигуры и росту", "3 сторис на сегодня: ширина ремня для разных образов, длина, посадка", "Контент-план на неделю: параметры, таблица выбора, образы, ошибки, рекомендации"] },
+      { goal: "engagement", format: "reels", lines: ["5 идей постов: стоимость ремня ручной работы - из чего складывается цена", "3 сторис на сегодня: материалы, время на работу, финальная стоимость", "Контент-план на неделю: ценообразование, прозрачность, ценность, кейсы, оффер"] },
+      { goal: "brand", format: "carousel", lines: ["5 идей постов: лимитированная серия ремней с авторскими пряжками", "3 сторис на сегодня: анонс дропа, детали серии, таймер старта продаж", "Контент-план на неделю: прогрев, дроп, отзывы первых покупателей, остатки, повтор"] },
+      { goal: "sales", format: "reels", lines: ["5 идей постов: как хранить ремни, чтобы они не деформировались", "3 сторис на сегодня: правильное хранение, неправильное хранение, чек-лист", "Контент-план на неделю: хранение, уход, сезонные советы, полезные мелочи, Q&A"] },
+      { goal: "engagement", format: "carousel", lines: ["5 идей постов: как выбрать форму и цвет пряжки под стиль клиента", "3 сторис на сегодня: серебро vs латунь, классика vs минимализм, опрос", "Контент-план на неделю: пряжки, стили, примеры комплектов, консультации, отзывы"] },
+      { goal: "brand", format: "text", lines: ["5 идей постов: путь заказа в мастерской - от заявки до вручения", "3 сторис на сегодня: входящая заявка, этап изготовления, выдача клиенту", "Контент-план на неделю: воронка заказа, сроки, сервис, упаковка, обратная связь"] }
     ];
 
     const list = document.getElementById("ideasList");
     const button = document.getElementById("generateBtn");
+    const goalChips = document.getElementById("goalChips");
+    const formatChips = document.getElementById("formatChips");
+    const hint = document.getElementById("selectionHint");
+    let selectedGoal = "all";
+    let selectedFormat = "all";
 
-    button.addEventListener("click", () => {
+    const goalLabels = {
+      all: "все цели",
+      sales: "цель: продажи",
+      engagement: "цель: вовлечение",
+      brand: "цель: личный бренд"
+    };
+
+    const formatLabels = {
+      all: "все форматы",
+      reels: "формат: Reels",
+      carousel: "формат: карусель",
+      text: "формат: текстовый пост"
+    };
+
+    function getFilteredSets() {
+      return ideasByCategory.filter((item) => {
+        const matchGoal = selectedGoal === "all" || item.goal === selectedGoal;
+        const matchFormat = selectedFormat === "all" || item.format === selectedFormat;
+        return matchGoal && matchFormat;
+      });
+    }
+
+    function updateHint(total) {
+      const goalText = goalLabels[selectedGoal];
+      const formatText = formatLabels[selectedFormat];
+      hint.textContent = `Фильтр: ${goalText}, ${formatText}. Найдено наборов: ${total}.`;
+    }
+
+    function pulseChip(chip) {
+      chip.classList.remove("pulse-once");
+      void chip.offsetWidth;
+      chip.classList.add("pulse-once");
+    }
+
+    function setActiveChip(groupNode, value) {
+      const chips = groupNode.querySelectorAll(".chip");
+      chips.forEach((chip) => {
+        chip.classList.toggle("active", chip.dataset.value === value);
+      });
+    }
+
+    function renderNextSet() {
       const current = Array.from(list.children).map((li) => li.textContent);
-      let next = ideasByCategory[Math.floor(Math.random() * ideasByCategory.length)];
+      const filteredSets = getFilteredSets();
+      updateHint(filteredSets.length);
 
-      while (next.join("|") === current.join("|")) {
-        next = ideasByCategory[Math.floor(Math.random() * ideasByCategory.length)];
+      if (filteredSets.length === 0) {
+        const emptyState = [
+          "Нет наборов под выбранные фильтры",
+          "Измени цель или формат и попробуй снова",
+          "Можно выбрать «Все цели» и «Все форматы»"
+        ];
+        Array.from(list.children).forEach((li, idx) => {
+          li.textContent = emptyState[idx];
+        });
+        return;
+      }
+
+      let next = filteredSets[Math.floor(Math.random() * filteredSets.length)];
+
+      if (filteredSets.length > 1) {
+        while (next.lines.join("|") === current.join("|")) {
+          next = filteredSets[Math.floor(Math.random() * filteredSets.length)];
+        }
       }
 
       list.classList.remove("is-refreshing");
@@ -188,9 +352,33 @@
       list.classList.add("is-refreshing");
 
       Array.from(list.children).forEach((li, idx) => {
-        li.textContent = next[idx];
+        li.textContent = next.lines[idx];
       });
+    }
+
+    button.addEventListener("click", renderNextSet);
+
+    goalChips.addEventListener("click", (event) => {
+      const chip = event.target.closest(".chip");
+      if (!chip) return;
+      if (chip.dataset.value === selectedGoal) return;
+      selectedGoal = chip.dataset.value;
+      setActiveChip(goalChips, selectedGoal);
+      pulseChip(chip);
+      renderNextSet();
     });
+
+    formatChips.addEventListener("click", (event) => {
+      const chip = event.target.closest(".chip");
+      if (!chip) return;
+      if (chip.dataset.value === selectedFormat) return;
+      selectedFormat = chip.dataset.value;
+      setActiveChip(formatChips, selectedFormat);
+      pulseChip(chip);
+      renderNextSet();
+    });
+
+    updateHint(ideasByCategory.length);
   </script>
 </body>
 </html>
